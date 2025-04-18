@@ -1,0 +1,49 @@
+# Step 1: Import libraries
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import matplotlib.pyplot as plt
+
+# Step 2: Generate fake embryo data
+np.random.seed(42)
+n = 200
+
+symmetry = np.random.rand(n)  # 0 to 1
+fragmentation = np.random.rand(n)  # 0 to 1 (lower is better)
+growth_rate = np.random.rand(n)  # 0 to 1
+
+# Simple logic: high symmetry & growth rate, low fragmentation = higher success
+labels = (symmetry + growth_rate - fragmentation > 1.2).astype(int)
+
+# Create DataFrame
+data = pd.DataFrame({
+    'Symmetry': symmetry,
+    'Fragmentation': fragmentation,
+    'GrowthRate': growth_rate,
+    'Success': labels
+})
+
+# Step 3: Train a model
+X = data[['Symmetry', 'Fragmentation', 'GrowthRate']]
+y = data['Success']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+# Step 4: Test prediction
+sample = pd.DataFrame({
+    'Symmetry': [0.8],
+    'Fragmentation': [0.1],
+    'GrowthRate': [0.9]
+})
+prediction = model.predict(sample)
+print("Predicted success:", "Yes" if prediction[0] == 1 else "No")
+
+# Bonus: Show feature importance
+importances = model.feature_importances_
+plt.bar(X.columns, importances)
+plt.title("Which features matter most?")
+plt.show()
